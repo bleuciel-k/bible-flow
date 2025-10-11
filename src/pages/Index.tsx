@@ -6,7 +6,7 @@ import SearchBar from "@/components/SearchBar";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { parseBibleText, Verse } from "@/utils/bibleParser";
+import { sampleVerses, loadFullBible, Verse } from "@/data/bibleVerses";
 
 type View = 'books' | 'chapters' | 'reading';
 
@@ -14,13 +14,21 @@ const Index = () => {
   const [currentView, setCurrentView] = useState<View>('books');
   const [selectedBook, setSelectedBook] = useState<number | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
-  const [allVerses, setAllVerses] = useState<Verse[]>([]);
+  const [allVerses, setAllVerses] = useState<Verse[]>(sampleVerses);
   const [chapterVerses, setChapterVerses] = useState<Verse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    parseBibleText().then(data => {
-      setAllVerses(data.verses);
+    // Load full Bible in background
+    setIsLoading(true);
+    loadFullBible().then(verses => {
+      if (verses.length > sampleVerses.length) {
+        setAllVerses(verses);
+        console.log(`Successfully loaded ${verses.length} verses`);
+      }
+      setIsLoading(false);
+    }).catch(error => {
+      console.error('Failed to load Bible:', error);
       setIsLoading(false);
     });
   }, []);
@@ -92,7 +100,7 @@ const Index = () => {
               </h1>
             </div>
             
-            {!isLoading && (
+            {allVerses.length > 0 && (
               <SearchBar verses={allVerses} onVerseSelect={handleVerseSelect} />
             )}
           </div>

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { Search } from "lucide-react";
-import { Verse } from "@/utils/bibleParser";
+import { Verse } from "@/data/bibleVerses";
 
 interface SearchBarProps {
   verses: Verse[];
