@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { bibleBooks } from "@/data/bible";
 import BookCard from "@/components/BookCard";
 import ChapterGrid from "@/components/ChapterGrid";
+import SearchBar from "@/components/SearchBar";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { parseBibleText, Verse } from "@/utils/bibleParser";
 
 type View = 'books' | 'chapters' | 'reading';
 
@@ -12,6 +14,16 @@ const Index = () => {
   const [currentView, setCurrentView] = useState<View>('books');
   const [selectedBook, setSelectedBook] = useState<number | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
+  const [allVerses, setAllVerses] = useState<Verse[]>([]);
+  const [chapterVerses, setChapterVerses] = useState<Verse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    parseBibleText().then(data => {
+      setAllVerses(data.verses);
+      setIsLoading(false);
+    });
+  }, []);
 
   const handleBookSelect = (bookId: number) => {
     setSelectedBook(bookId);
@@ -21,6 +33,25 @@ const Index = () => {
   const handleChapterSelect = (chapter: number) => {
     setSelectedChapter(chapter);
     setCurrentView('reading');
+    
+    // Load verses for the selected chapter
+    if (selectedBook) {
+      const verses = allVerses.filter(
+        v => v.bookId === selectedBook && v.chapter === chapter
+      );
+      setChapterVerses(verses);
+    }
+  };
+
+  const handleVerseSelect = (verse: Verse) => {
+    setSelectedBook(verse.bookId);
+    setSelectedChapter(verse.chapter);
+    setCurrentView('reading');
+    
+    const verses = allVerses.filter(
+      v => v.bookId === verse.bookId && v.chapter === verse.chapter
+    );
+    setChapterVerses(verses);
   };
 
   const handleBack = () => {
@@ -56,10 +87,14 @@ const Index = () => {
             <div className="flex items-center gap-3">
               <BookOpen className="w-8 h-8 text-primary" />
               <h1 className="text-3xl font-bold text-foreground">
-                {currentView === 'books' ? '성경' : book?.name}
-                {currentView === 'reading' && selectedChapter && ` ${selectedChapter}장`}
+                {currentView === 'books' ? 'Holy Bible' : book?.name}
+                {currentView === 'reading' && selectedChapter && ` Chapter ${selectedChapter}`}
               </h1>
             </div>
+            
+            {!isLoading && (
+              <SearchBar verses={allVerses} onVerseSelect={handleVerseSelect} />
+            )}
           </div>
         </div>
       </header>
@@ -69,8 +104,8 @@ const Index = () => {
         {currentView === 'books' && (
           <Tabs defaultValue="old" className="w-full">
             <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
-              <TabsTrigger value="old" className="text-lg">구약</TabsTrigger>
-              <TabsTrigger value="new" className="text-lg">신약</TabsTrigger>
+              <TabsTrigger value="old" className="text-lg">Old Testament</TabsTrigger>
+              <TabsTrigger value="new" className="text-lg">New Testament</TabsTrigger>
             </TabsList>
             
             <TabsContent value="old" className="animate-fade-in">
@@ -103,7 +138,7 @@ const Index = () => {
           <div className="animate-fade-in max-w-4xl mx-auto">
             <div className="mb-8 text-center">
               <h2 className="text-2xl font-semibold text-muted-foreground mb-2">
-                읽으실 장을 선택하세요
+                Select a chapter
               </h2>
             </div>
             <ChapterGrid
@@ -116,14 +151,24 @@ const Index = () => {
         {currentView === 'reading' && book && selectedChapter && (
           <div className="animate-fade-in max-w-3xl mx-auto">
             <div className="bg-card p-8 md:p-12 rounded-3xl shadow-lg border border-border">
-              <div className="prose prose-lg max-w-none">
-                <p className="text-lg leading-relaxed text-foreground mb-6">
-                  성경 본문이 여기에 표시됩니다.
+              {chapterVerses.length > 0 ? (
+                <div className="space-y-4">
+                  {chapterVerses.map((verse) => (
+                    <div key={verse.verse} className="flex gap-3">
+                      <span className="text-sm font-semibold text-primary min-w-[2rem]">
+                        {verse.verse}
+                      </span>
+                      <p className="text-base leading-relaxed text-foreground">
+                        {verse.text}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground italic text-center">
+                  Loading chapter...
                 </p>
-                <p className="text-muted-foreground italic">
-                  실제 성경 데이터를 연동하려면 Bible API를 사용하거나 데이터베이스를 추가해야 합니다.
-                </p>
-              </div>
+              )}
             </div>
           </div>
         )}
