@@ -81,8 +81,10 @@ const bookNameMapping: Record<string, number> = {
 };
 
 export async function parseBibleText(): Promise<ParsedBibleData> {
-  const response = await fetch('/src/data/bible-text.txt');
-  const text = await response.text();
+  try {
+    const response = await fetch('/bible-text.txt');
+    if (!response.ok) throw new Error('Failed to load Bible text');
+    const text = await response.text();
   const lines = text.split('\n');
   
   const verses: Verse[] = [];
@@ -340,6 +342,10 @@ export async function parseBibleText(): Promise<ParsedBibleData> {
   }
   
   return { verses, chaptersByBook };
+  } catch (error) {
+    console.error('Error parsing Bible text:', error);
+    return { verses: [], chaptersByBook: new Map() };
+  }
 }
 
 export function searchVerses(verses: Verse[], query: string): Verse[] {
