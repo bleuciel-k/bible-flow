@@ -42,20 +42,67 @@ interface BibleBookJSON {
   }[];
 }
 
+// Book name to ID mapping
+const bookNameToId: { [key: string]: number } = {
+  'Genesis': 1,
+  '1 Chronicles': 13,
+  '1 Corinthians': 46,
+  '1 John': 62,
+  '1 Kings': 11,
+  '1 Peter': 60,
+  '1 Samuel': 9,
+  '1 Thessalonians': 52,
+  '1 Timothy': 54,
+  '2 Chronicles': 14,
+  '2 Corinthians': 47,
+};
+
+// List of available Bible books (JSON files)
+const availableBooks = [
+  'Genesis',
+  '1Chronicles',
+  '1Corinthians',
+  '1John',
+  '1Kings',
+  '1Peter',
+  '1Samuel',
+  '1Thessalonians',
+  '1Timothy',
+  '2Chronicles',
+  '2Corinthians',
+];
+
 // This would load the full Bible asynchronously
 export async function loadFullBible(): Promise<Verse[]> {
   try {
-    // For now, load Genesis
-    const response = await fetch('/bible-data/Genesis.json');
-    if (!response.ok) {
-      console.warn('Could not load Bible data, using sample verses');
+    const allVerses: Verse[] = [];
+    
+    // Load all available books
+    for (const bookFileName of availableBooks) {
+      try {
+        const response = await fetch(`/bible-data/${bookFileName}.json`);
+        if (!response.ok) {
+          console.warn(`Could not load ${bookFileName}`);
+          continue;
+        }
+        
+        const data: BibleBookJSON = await response.json();
+        const bookId = bookNameToId[data.book] || 0;
+        const verses = parseJSONBook(data, bookId);
+        allVerses.push(...verses);
+        console.log(`Loaded ${verses.length} verses from ${data.book}`);
+      } catch (error) {
+        console.error(`Error loading ${bookFileName}:`, error);
+      }
+    }
+    
+    if (allVerses.length === 0) {
+      console.warn('No Bible data loaded, using sample verses');
       return sampleVerses;
     }
     
-    const data: BibleBookJSON = await response.json();
-    const verses = parseJSONBook(data, 1); // Genesis is bookId 1
-    console.log(`Loaded ${verses.length} verses from ${data.book}`);
-    return verses;
+    console.log(`Total verses loaded: ${allVerses.length}`);
+    return allVerses;
   } catch (error) {
     console.error('Error loading Bible:', error);
     return sampleVerses;
