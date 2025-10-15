@@ -31,18 +31,30 @@ export const sampleVerses: Verse[] = [
   { bookId: 19, book: "Psalms", chapter: 23, verse: 4, text: "Yea, though I walk through the valley of the shadow of death, I will fear no evil: for thou art with me; thy rod and thy staff they comfort me." },
 ];
 
+interface BibleBookJSON {
+  book: string;
+  chapters: {
+    chapter: string;
+    verses: {
+      verse: string;
+      text: string;
+    }[];
+  }[];
+}
+
 // This would load the full Bible asynchronously
 export async function loadFullBible(): Promise<Verse[]> {
   try {
-    const response = await fetch('/bible-text.txt');
+    // For now, load Genesis
+    const response = await fetch('/bible-data/Genesis.json');
     if (!response.ok) {
-      console.warn('Could not load full Bible text, using sample verses');
+      console.warn('Could not load Bible data, using sample verses');
       return sampleVerses;
     }
     
-    const text = await response.text();
-    const verses = parseBibleText(text);
-    console.log(`Loaded ${verses.length} verses from Bible`);
+    const data: BibleBookJSON = await response.json();
+    const verses = parseJSONBook(data, 1); // Genesis is bookId 1
+    console.log(`Loaded ${verses.length} verses from ${data.book}`);
     return verses;
   } catch (error) {
     console.error('Error loading Bible:', error);
@@ -50,124 +62,23 @@ export async function loadFullBible(): Promise<Verse[]> {
   }
 }
 
-function parseBibleText(text: string): Verse[] {
-  const lines = text.split('\n');
+function parseJSONBook(bookData: BibleBookJSON, bookId: number): Verse[] {
   const verses: Verse[] = [];
   
-  let currentBookName = '';
-  let currentBookId = 0;
-  let currentChapter = 0;
-  
-  const bookPatterns: [RegExp, string, number][] = [
-    [/THE FIRST BOOK OF MOSES.*GENESIS/i, 'Genesis', 1],
-    [/THE SECOND BOOK OF MOSES.*EXODUS/i, 'Exodus', 2],
-    [/THE THIRD BOOK OF MOSES.*LEVITICUS/i, 'Leviticus', 3],
-    [/THE FOURTH BOOK OF MOSES.*NUMBERS/i, 'Numbers', 4],
-    [/THE FIFTH BOOK OF MOSES.*DEUTERONOMY/i, 'Deuteronomy', 5],
-    [/JOSHUA/i, 'Joshua', 6],
-    [/JUDGES/i, 'Judges', 7],
-    [/RUTH/i, 'Ruth', 8],
-    [/THE FIRST BOOK OF.*SAMUEL/i, '1 Samuel', 9],
-    [/THE SECOND BOOK OF.*SAMUEL/i, '2 Samuel', 10],
-    [/THE FIRST BOOK OF.*KINGS/i, '1 Kings', 11],
-    [/THE SECOND BOOK OF.*KINGS/i, '2 Kings', 12],
-    [/THE FIRST BOOK OF.*CHRONICLES/i, '1 Chronicles', 13],
-    [/THE SECOND BOOK OF.*CHRONICLES/i, '2 Chronicles', 14],
-    [/EZRA/i, 'Ezra', 15],
-    [/NEHEMIAH/i, 'Nehemiah', 16],
-    [/ESTHER/i, 'Esther', 17],
-    [/JOB/i, 'Job', 18],
-    [/THE BOOK OF PSALMS/i, 'Psalms', 19],
-    [/PROVERBS/i, 'Proverbs', 20],
-    [/ECCLESIASTES/i, 'Ecclesiastes', 21],
-    [/SONG OF SOLOMON/i, 'Song of Solomon', 22],
-    [/THE BOOK OF.*ISAIAH/i, 'Isaiah', 23],
-    [/THE BOOK OF.*JEREMIAH/i, 'Jeremiah', 24],
-    [/LAMENTATIONS/i, 'Lamentations', 25],
-    [/THE BOOK OF.*EZEKIEL/i, 'Ezekiel', 26],
-    [/THE BOOK OF DANIEL/i, 'Daniel', 27],
-    [/HOSEA/i, 'Hosea', 28],
-    [/JOEL/i, 'Joel', 29],
-    [/AMOS/i, 'Amos', 30],
-    [/OBADIAH/i, 'Obadiah', 31],
-    [/JONAH/i, 'Jonah', 32],
-    [/MICAH/i, 'Micah', 33],
-    [/NAHUM/i, 'Nahum', 34],
-    [/HABAKKUK/i, 'Habakkuk', 35],
-    [/ZEPHANIAH/i, 'Zephaniah', 36],
-    [/HAGGAI/i, 'Haggai', 37],
-    [/ZECHARIAH/i, 'Zechariah', 38],
-    [/MALACHI/i, 'Malachi', 39],
-    [/THE GOSPEL.*MATTHEW/i, 'Matthew', 40],
-    [/THE GOSPEL.*MARK/i, 'Mark', 41],
-    [/THE GOSPEL.*LUKE/i, 'Luke', 42],
-    [/THE GOSPEL.*JOHN/i, 'John', 43],
-    [/THE ACTS/i, 'Acts', 44],
-    [/THE EPISTLE.*ROMANS/i, 'Romans', 45],
-    [/THE FIRST EPISTLE.*CORINTHIANS/i, '1 Corinthians', 46],
-    [/THE SECOND EPISTLE.*CORINTHIANS/i, '2 Corinthians', 47],
-    [/THE EPISTLE.*GALATIANS/i, 'Galatians', 48],
-    [/THE EPISTLE.*EPHESIANS/i, 'Ephesians', 49],
-    [/THE EPISTLE.*PHILIPPIANS/i, 'Philippians', 50],
-    [/THE EPISTLE.*COLOSSIANS/i, 'Colossians', 51],
-    [/THE FIRST EPISTLE.*THESSALONIANS/i, '1 Thessalonians', 52],
-    [/THE SECOND EPISTLE.*THESSALONIANS/i, '2 Thessalonians', 53],
-    [/THE FIRST EPISTLE.*TIMOTHY/i, '1 Timothy', 54],
-    [/THE SECOND EPISTLE.*TIMOTHY/i, '2 Timothy', 55],
-    [/THE EPISTLE.*TITUS/i, 'Titus', 56],
-    [/THE EPISTLE.*PHILEMON/i, 'Philemon', 57],
-    [/THE EPISTLE.*HEBREWS/i, 'Hebrews', 58],
-    [/THE GENERAL EPISTLE.*JAMES/i, 'James', 59],
-    [/THE FIRST EPISTLE.*PETER/i, '1 Peter', 60],
-    [/THE SECOND EPISTLE.*PETER/i, '2 Peter', 61],
-    [/THE FIRST EPISTLE.*JOHN/i, '1 John', 62],
-    [/THE SECOND EPISTLE.*JOHN/i, '2 John', 63],
-    [/THE THIRD EPISTLE.*JOHN/i, '3 John', 64],
-    [/THE GENERAL EPISTLE.*JUDE/i, 'Jude', 65],
-    [/THE REVELATION/i, 'Revelation', 66],
-  ];
-  
-  for (const line of lines) {
-    const trimmedLine = line.trim();
-    if (!trimmedLine) continue;
+  for (const chapterData of bookData.chapters) {
+    const chapterNum = parseInt(chapterData.chapter);
     
-    // Check for book names
-    for (const [pattern, name, id] of bookPatterns) {
-      if (pattern.test(trimmedLine)) {
-        currentBookName = name;
-        currentBookId = id;
-        console.log(`Found book: ${name} (ID: ${id})`);
-        break;
-      }
-    }
-    
-    // Check for chapter
-    const chapterMatch = trimmedLine.match(/^CHAPTER\s+(\d+)$/i);
-    if (chapterMatch) {
-      currentChapter = parseInt(chapterMatch[1]);
-      console.log(`Found chapter: ${currentChapter} in ${currentBookName}`);
-      continue;
-    }
-    
-    // Parse verse - format: "1 In the beginning..."
-    const verseMatch = trimmedLine.match(/^(\d+)\s+(.+)$/);
-    if (verseMatch && currentBookId > 0 && currentChapter > 0) {
-      const verseNum = parseInt(verseMatch[1]);
-      let verseText = verseMatch[2].trim();
-      
-      // Remove special characters like # and brackets
-      verseText = verseText.replace(/^#\s*/, '').replace(/\[/g, '').replace(/\]/g, '');
-      
+    for (const verseData of chapterData.verses) {
       verses.push({
-        book: currentBookName,
-        bookId: currentBookId,
-        chapter: currentChapter,
-        verse: verseNum,
-        text: verseText
+        book: bookData.book,
+        bookId: bookId,
+        chapter: chapterNum,
+        verse: parseInt(verseData.verse),
+        text: verseData.text
       });
     }
   }
   
-  console.log(`Total verses parsed: ${verses.length}`);
   return verses;
 }
+
