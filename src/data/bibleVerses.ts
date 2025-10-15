@@ -59,98 +59,104 @@ function parseBibleText(text: string): Verse[] {
   let currentChapter = 0;
   
   const bookPatterns: [RegExp, string, number][] = [
-    [/FIRST BOOK OF MOSES|^GENESIS$/i, 'Genesis', 1],
-    [/SECOND BOOK OF MOSES|^EXODUS$/i, 'Exodus', 2],
-    [/THIRD BOOK OF MOSES|^LEVITICUS$/i, 'Leviticus', 3],
-    [/FOURTH BOOK OF MOSES|^NUMBERS$/i, 'Numbers', 4],
-    [/FIFTH BOOK OF MOSES|^DEUTERONOMY$/i, 'Deuteronomy', 5],
-    [/^JOSHUA$/i, 'Joshua', 6],
-    [/^JUDGES$/i, 'Judges', 7],
-    [/^RUTH$/i, 'Ruth', 8],
-    [/FIRST.*SAMUEL|^1 SAMUEL$/i, '1 Samuel', 9],
-    [/SECOND.*SAMUEL|^2 SAMUEL$/i, '2 Samuel', 10],
-    [/FIRST.*KINGS|^1 KINGS$/i, '1 Kings', 11],
-    [/SECOND.*KINGS|^2 KINGS$/i, '2 Kings', 12],
-    [/FIRST.*CHRONICLES|^1 CHRONICLES$/i, '1 Chronicles', 13],
-    [/SECOND.*CHRONICLES|^2 CHRONICLES$/i, '2 Chronicles', 14],
-    [/^EZRA$/i, 'Ezra', 15],
-    [/^NEHEMIAH$/i, 'Nehemiah', 16],
-    [/^ESTHER$/i, 'Esther', 17],
-    [/^JOB$/i, 'Job', 18],
-    [/^PSALM/i, 'Psalms', 19],
-    [/^PROVERBS$/i, 'Proverbs', 20],
-    [/^ECCLESIASTES$/i, 'Ecclesiastes', 21],
-    [/SONG OF SOLOMON|CANTICLES/i, 'Song of Solomon', 22],
-    [/^ISAIAH$/i, 'Isaiah', 23],
-    [/^JEREMIAH$/i, 'Jeremiah', 24],
+    [/THE FIRST BOOK OF MOSES.*GENESIS/i, 'Genesis', 1],
+    [/THE SECOND BOOK OF MOSES.*EXODUS/i, 'Exodus', 2],
+    [/THE THIRD BOOK OF MOSES.*LEVITICUS/i, 'Leviticus', 3],
+    [/THE FOURTH BOOK OF MOSES.*NUMBERS/i, 'Numbers', 4],
+    [/THE FIFTH BOOK OF MOSES.*DEUTERONOMY/i, 'Deuteronomy', 5],
+    [/JOSHUA/i, 'Joshua', 6],
+    [/JUDGES/i, 'Judges', 7],
+    [/RUTH/i, 'Ruth', 8],
+    [/THE FIRST BOOK OF.*SAMUEL/i, '1 Samuel', 9],
+    [/THE SECOND BOOK OF.*SAMUEL/i, '2 Samuel', 10],
+    [/THE FIRST BOOK OF.*KINGS/i, '1 Kings', 11],
+    [/THE SECOND BOOK OF.*KINGS/i, '2 Kings', 12],
+    [/THE FIRST BOOK OF.*CHRONICLES/i, '1 Chronicles', 13],
+    [/THE SECOND BOOK OF.*CHRONICLES/i, '2 Chronicles', 14],
+    [/EZRA/i, 'Ezra', 15],
+    [/NEHEMIAH/i, 'Nehemiah', 16],
+    [/ESTHER/i, 'Esther', 17],
+    [/JOB/i, 'Job', 18],
+    [/THE BOOK OF PSALMS/i, 'Psalms', 19],
+    [/PROVERBS/i, 'Proverbs', 20],
+    [/ECCLESIASTES/i, 'Ecclesiastes', 21],
+    [/SONG OF SOLOMON/i, 'Song of Solomon', 22],
+    [/THE BOOK OF.*ISAIAH/i, 'Isaiah', 23],
+    [/THE BOOK OF.*JEREMIAH/i, 'Jeremiah', 24],
     [/LAMENTATIONS/i, 'Lamentations', 25],
-    [/^EZEKIEL$/i, 'Ezekiel', 26],
-    [/^DANIEL$/i, 'Daniel', 27],
-    [/^HOSEA$/i, 'Hosea', 28],
-    [/^JOEL$/i, 'Joel', 29],
-    [/^AMOS$/i, 'Amos', 30],
-    [/^OBADIAH$/i, 'Obadiah', 31],
-    [/^JONAH$/i, 'Jonah', 32],
-    [/^MICAH$/i, 'Micah', 33],
-    [/^NAHUM$/i, 'Nahum', 34],
-    [/^HABAKKUK$/i, 'Habakkuk', 35],
-    [/^ZEPHANIAH$/i, 'Zephaniah', 36],
-    [/^HAGGAI$/i, 'Haggai', 37],
-    [/^ZECHARIAH$/i, 'Zechariah', 38],
-    [/^MALACHI$/i, 'Malachi', 39],
-    [/^MATTHEW$/i, 'Matthew', 40],
-    [/^MARK$/i, 'Mark', 41],
-    [/^LUKE$/i, 'Luke', 42],
-    [/^JOHN$/i, 'John', 43],
-    [/^ACTS$/i, 'Acts', 44],
-    [/^ROMANS$/i, 'Romans', 45],
-    [/^1 CORINTHIANS$/i, '1 Corinthians', 46],
-    [/^2 CORINTHIANS$/i, '2 Corinthians', 47],
-    [/^GALATIANS$/i, 'Galatians', 48],
-    [/^EPHESIANS$/i, 'Ephesians', 49],
-    [/^PHILIPPIANS$/i, 'Philippians', 50],
-    [/^COLOSSIANS$/i, 'Colossians', 51],
-    [/^1 THESSALONIANS$/i, '1 Thessalonians', 52],
-    [/^2 THESSALONIANS$/i, '2 Thessalonians', 53],
-    [/^1 TIMOTHY$/i, '1 Timothy', 54],
-    [/^2 TIMOTHY$/i, '2 Timothy', 55],
-    [/^TITUS$/i, 'Titus', 56],
-    [/^PHILEMON$/i, 'Philemon', 57],
-    [/^HEBREWS$/i, 'Hebrews', 58],
-    [/^JAMES$/i, 'James', 59],
-    [/^1 PETER$/i, '1 Peter', 60],
-    [/^2 PETER$/i, '2 Peter', 61],
-    [/^1 JOHN$/i, '1 John', 62],
-    [/^2 JOHN$/i, '2 John', 63],
-    [/^3 JOHN$/i, '3 John', 64],
-    [/^JUDE$/i, 'Jude', 65],
-    [/REVELATION/i, 'Revelation', 66],
+    [/THE BOOK OF.*EZEKIEL/i, 'Ezekiel', 26],
+    [/THE BOOK OF DANIEL/i, 'Daniel', 27],
+    [/HOSEA/i, 'Hosea', 28],
+    [/JOEL/i, 'Joel', 29],
+    [/AMOS/i, 'Amos', 30],
+    [/OBADIAH/i, 'Obadiah', 31],
+    [/JONAH/i, 'Jonah', 32],
+    [/MICAH/i, 'Micah', 33],
+    [/NAHUM/i, 'Nahum', 34],
+    [/HABAKKUK/i, 'Habakkuk', 35],
+    [/ZEPHANIAH/i, 'Zephaniah', 36],
+    [/HAGGAI/i, 'Haggai', 37],
+    [/ZECHARIAH/i, 'Zechariah', 38],
+    [/MALACHI/i, 'Malachi', 39],
+    [/THE GOSPEL.*MATTHEW/i, 'Matthew', 40],
+    [/THE GOSPEL.*MARK/i, 'Mark', 41],
+    [/THE GOSPEL.*LUKE/i, 'Luke', 42],
+    [/THE GOSPEL.*JOHN/i, 'John', 43],
+    [/THE ACTS/i, 'Acts', 44],
+    [/THE EPISTLE.*ROMANS/i, 'Romans', 45],
+    [/THE FIRST EPISTLE.*CORINTHIANS/i, '1 Corinthians', 46],
+    [/THE SECOND EPISTLE.*CORINTHIANS/i, '2 Corinthians', 47],
+    [/THE EPISTLE.*GALATIANS/i, 'Galatians', 48],
+    [/THE EPISTLE.*EPHESIANS/i, 'Ephesians', 49],
+    [/THE EPISTLE.*PHILIPPIANS/i, 'Philippians', 50],
+    [/THE EPISTLE.*COLOSSIANS/i, 'Colossians', 51],
+    [/THE FIRST EPISTLE.*THESSALONIANS/i, '1 Thessalonians', 52],
+    [/THE SECOND EPISTLE.*THESSALONIANS/i, '2 Thessalonians', 53],
+    [/THE FIRST EPISTLE.*TIMOTHY/i, '1 Timothy', 54],
+    [/THE SECOND EPISTLE.*TIMOTHY/i, '2 Timothy', 55],
+    [/THE EPISTLE.*TITUS/i, 'Titus', 56],
+    [/THE EPISTLE.*PHILEMON/i, 'Philemon', 57],
+    [/THE EPISTLE.*HEBREWS/i, 'Hebrews', 58],
+    [/THE GENERAL EPISTLE.*JAMES/i, 'James', 59],
+    [/THE FIRST EPISTLE.*PETER/i, '1 Peter', 60],
+    [/THE SECOND EPISTLE.*PETER/i, '2 Peter', 61],
+    [/THE FIRST EPISTLE.*JOHN/i, '1 John', 62],
+    [/THE SECOND EPISTLE.*JOHN/i, '2 John', 63],
+    [/THE THIRD EPISTLE.*JOHN/i, '3 John', 64],
+    [/THE GENERAL EPISTLE.*JUDE/i, 'Jude', 65],
+    [/THE REVELATION/i, 'Revelation', 66],
   ];
   
   for (const line of lines) {
-    if (!line.trim()) continue;
+    const trimmedLine = line.trim();
+    if (!trimmedLine) continue;
     
     // Check for book names
     for (const [pattern, name, id] of bookPatterns) {
-      if (pattern.test(line)) {
+      if (pattern.test(trimmedLine)) {
         currentBookName = name;
         currentBookId = id;
+        console.log(`Found book: ${name} (ID: ${id})`);
         break;
       }
     }
     
     // Check for chapter
-    const chapterMatch = line.match(/^(?:CHAPTER|PSALM)\s+(\d+)$/);
+    const chapterMatch = trimmedLine.match(/^CHAPTER\s+(\d+)$/i);
     if (chapterMatch) {
       currentChapter = parseInt(chapterMatch[1]);
+      console.log(`Found chapter: ${currentChapter} in ${currentBookName}`);
       continue;
     }
     
-    // Parse verse
-    const verseMatch = line.match(/^(\d+)\s+(.+)$/);
+    // Parse verse - format: "1 In the beginning..."
+    const verseMatch = trimmedLine.match(/^(\d+)\s+(.+)$/);
     if (verseMatch && currentBookId > 0 && currentChapter > 0) {
       const verseNum = parseInt(verseMatch[1]);
-      const verseText = verseMatch[2].trim();
+      let verseText = verseMatch[2].trim();
+      
+      // Remove special characters like # and brackets
+      verseText = verseText.replace(/^#\s*/, '').replace(/\[/g, '').replace(/\]/g, '');
       
       verses.push({
         book: currentBookName,
@@ -162,5 +168,6 @@ function parseBibleText(text: string): Verse[] {
     }
   }
   
+  console.log(`Total verses parsed: ${verses.length}`);
   return verses;
 }
