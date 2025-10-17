@@ -19,7 +19,7 @@ const BookCard = ({ book, onClick }: BookCardProps) => {
             {book.name}
           </h3>
           <p className="text-sm text-muted-foreground">
-            {book.chapters}개 장
+            {book.chapters} chapters
           </p>
         </div>
         <ChevronRight className="w-6 h-6 text-primary transition-transform duration-300 group-hover:translate-x-1" />

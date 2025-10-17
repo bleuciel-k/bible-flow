@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { sampleVerses, loadFullBible, Verse } from "@/data/bibleVerses";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type View = 'books' | 'chapters' | 'reading';
 
 const Index = () => {
+  const isMobile = useIsMobile();
   const [currentView, setCurrentView] = useState<View>('books');
   const [selectedBook, setSelectedBook] = useState<number | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
@@ -80,7 +82,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-card border-b border-border shadow-sm backdrop-blur-sm bg-opacity-95">
-        <div className="container mx-auto px-4 py-6">
+        <div className={`container mx-auto px-4 ${isMobile ? 'py-4' : 'py-6'}`}>
           <div className="flex items-center gap-4">
             {currentView !== 'books' && (
               <Button
